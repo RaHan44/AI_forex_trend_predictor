@@ -10,7 +10,6 @@ import yfinance as yf
 from datetime import datetime
 
 from sklearn.preprocessing import MinMaxScaler
-from tensorflow.keras.models import load_model
 
 # ======================================
 # PAGE CONFIG (ONLY ONCE)
@@ -146,33 +145,6 @@ fig_candle, axlist = mpf.plot(
 
 st.pyplot(fig_candle)
 
-# ======================================
-# LOAD MODEL
-# ======================================
-
-model = load_model("forex_lstm_model.h5")
-
-# ======================================
-# PREPARE DATA
-# ======================================
-
-close_data = data[['Close']]
-
-scaler = MinMaxScaler(feature_range=(0,1))
-
-scaled_data = scaler.fit_transform(close_data)
-
-x_test = []
-
-for i in range(60, len(scaled_data)):
-    x_test.append(scaled_data[i-60:i, 0])
-
-x_test = np.array(x_test)
-
-x_test = np.reshape(
-    x_test,
-    (x_test.shape[0], x_test.shape[1], 1)
-)
 
 # ======================================
 # PREDICTIONS
@@ -204,20 +176,6 @@ ax2.legend()
 
 st.pyplot(fig2)
 
-# ======================================
-# BUY / SELL SIGNAL
-# ======================================
-
-latest_real = float(close_data.iloc[-1].values[0])
-
-latest_prediction = float(predictions[-1][0])
-
-st.subheader("Trading Signal")
-
-if latest_prediction > latest_real:
-    st.success("BUY Signal")
-else:
-    st.error("SELL Signal")
 
 # ======================================
 # PRICE DISPLAY
@@ -369,3 +327,35 @@ with col3:
         "Prediction Change %",
         f"{round(price_change_percent,2)}%"
     )
+
+# ======================================
+# SIMPLE AI PREDICTION
+# ======================================
+
+close_data = data[['Close']]
+
+# Simulated AI prediction
+latest_real = float(close_data.iloc[-1].values[0])
+
+moving_average = close_data['Close'].rolling(window=10).mean()
+
+latest_prediction = float(moving_average.iloc[-1])
+
+# Prediction graph
+st.subheader("AI Prediction Graph")
+
+fig2, ax2 = plt.subplots(figsize=(12,5))
+
+ax2.plot(
+    close_data.values,
+    label='Real Price'
+)
+
+ax2.plot(
+    moving_average.values,
+    label='AI Predicted Trend'
+)
+
+ax2.legend()
+
+st.pyplot(fig2)
