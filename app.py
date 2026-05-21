@@ -146,16 +146,35 @@ fig_candle, axlist = mpf.plot(
 st.pyplot(fig_candle)
 
 
+# # ======================================
+# # PREDICTIONS
+# # ======================================
+
+# predictions = model.predict(x_test)
+
+# predictions = scaler.inverse_transform(predictions)
+
 # ======================================
-# PREDICTIONS
+# SIMPLE AI PREDICTION
 # ======================================
 
-predictions = model.predict(x_test)
+close_data = data[['Close']]
 
-predictions = scaler.inverse_transform(predictions)
+# Moving average based AI prediction
+moving_average = close_data['Close'].rolling(
+    window=10
+).mean()
+
+latest_real = float(
+    close_data.iloc[-1].values[0]
+)
+
+latest_prediction = float(
+    moving_average.iloc[-1]
+)
 
 # ======================================
-# PREDICTION GRAPH
+# AI PREDICTION GRAPH
 # ======================================
 
 st.subheader("AI Prediction Graph")
@@ -163,19 +182,18 @@ st.subheader("AI Prediction Graph")
 fig2, ax2 = plt.subplots(figsize=(12,5))
 
 ax2.plot(
-    close_data[60:].values,
+    close_data.values,
     label='Real Price'
 )
 
 ax2.plot(
-    predictions,
-    label='Predicted Price'
+    moving_average.values,
+    label='AI Predicted Trend'
 )
 
 ax2.legend()
 
 st.pyplot(fig2)
-
 
 # ======================================
 # PRICE DISPLAY
@@ -327,35 +345,3 @@ with col3:
         "Prediction Change %",
         f"{round(price_change_percent,2)}%"
     )
-
-# ======================================
-# SIMPLE AI PREDICTION
-# ======================================
-
-close_data = data[['Close']]
-
-# Simulated AI prediction
-latest_real = float(close_data.iloc[-1].values[0])
-
-moving_average = close_data['Close'].rolling(window=10).mean()
-
-latest_prediction = float(moving_average.iloc[-1])
-
-# Prediction graph
-st.subheader("AI Prediction Graph")
-
-fig2, ax2 = plt.subplots(figsize=(12,5))
-
-ax2.plot(
-    close_data.values,
-    label='Real Price'
-)
-
-ax2.plot(
-    moving_average.values,
-    label='AI Predicted Trend'
-)
-
-ax2.legend()
-
-st.pyplot(fig2)
